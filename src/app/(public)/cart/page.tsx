@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ApiError, createOrder, verifyRazorpayPayment } from "@/lib/api";
 import { RAZORPAY_KEY_ID } from "@/lib/config";
 import { checkoutErrorMessage, loadRazorpay, openCheckout } from "@/lib/razorpay";
+import { orderConfirmationPath } from "@/lib/orders";
 import { useSlowHint } from "@/lib/use-slow-hint";
 import { cn, formatCurrency } from "@/lib/utils";
 import { GST_NOTE } from "@/lib/constants";
@@ -28,7 +29,7 @@ const RAZORPAY_THEME = "#18181b";
 
 export default function CartPage() {
   const { user } = useAuth();
-  const { items, cartTotal, loading, removeFromCart, updateQuantity, refreshCart } = useCart();
+  const { items, cartTotal, loading, removeFromCart, updateQuantity } = useCart();
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [shippingAddress, setShippingAddress] = useState("");
@@ -41,6 +42,10 @@ export default function CartPage() {
   // or something fails. Drives the "still working" hint.
   const [preparing, setPreparing] = useState(false);
   const checkoutSlow = useSlowHint(preparing);
+
+  // True from the moment Razorpay reports a payment until the thank-you page
+  // replaces this one (or verification fails).
+  const [confirming, setConfirming] = useState(false);
 
   const handleCheckout = async () => {
     setCheckoutError("");
@@ -95,26 +100,31 @@ export default function CartPage() {
           onPaid: async (payment) => {
             paid = true;
             setCheckoutError("");
+            setConfirming(true);
             try {
               await verifyRazorpayPayment(payment);
-
-              // Google Ads purchase conversion
-              if (typeof window !== "undefined" && typeof window.gtag === "function") {
-                window.gtag("event", "conversion", {
-                  send_to: "AW-17705374623/Ty7LCMWB7ZAdEJ-nyvpB",
-                  value: cartTotal,
-                  currency: "INR",
-                  transaction_id: payment.razorpay_order_id,
-                });
-              }
-
-              await refreshCart();
-              router.push("/orders");
             } catch (verifyError) {
               console.error("Payment verification failed", verifyError);
+              setConfirming(false);
               setCheckoutError("We couldn't verify your payment. Please contact support before trying again.");
               setCheckoutLoading(false);
+              return;
             }
+
+            // Google Ads purchase conversion
+            if (typeof window !== "undefined" && typeof window.gtag === "function") {
+              window.gtag("event", "conversion", {
+                send_to: "AW-17705374623/Ty7LCMWB7ZAdEJ-nyvpB",
+                value: cartTotal,
+                currency: "INR",
+                transaction_id: payment.razorpay_order_id,
+              });
+            }
+
+            // Replace, so Back doesn't return to a cart that's now empty. The
+            // thank-you page refreshes the cart; doing it here would flash
+            // "Your cart is empty" before the page changes.
+            router.replace(orderConfirmationPath(created.order._id));
           },
           // Closing the window used to leave the button stuck on "Processing…".
           // Once a payment has gone through, though, verification is still
@@ -300,9 +310,11 @@ export default function CartPage() {
                   className={cn("min-h-5 text-small", checkoutError ? "text-danger" : "text-muted-foreground")}
                 >
                   {checkoutError ||
-                    (checkoutSlow
-                      ? "Still working — the payment service can take up to a minute to respond the first time."
-                      : "")}
+                    (confirming
+                      ? "Payment received — confirming your order…"
+                      : checkoutSlow
+                        ? "Still working — the payment service can take up to a minute to respond the first time."
+                        : "")}
                 </p>
 
                 <Button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CheckCircle2, Send } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ApiError, submitEnquiry } from "@/lib/api";
@@ -12,7 +12,10 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
-type Status = { state: "idle" | "sending" | "sent" } | { state: "error"; message: string; mailto: string };
+type Status =
+  | { state: "idle" | "sending" }
+  | { state: "sent"; email: string }
+  | { state: "error"; message: string; mailto: string };
 
 /**
  * Contact form. A submission is saved by the backend and shows up in the admin
@@ -32,10 +35,17 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
     product ? `I'd like a quote for ${quantity ? `${quantity} × ` : ""}${product}.\n\n` : ""
   );
   const [status, setStatus] = useState<Status>({ state: "idle" });
+  const thanksRef = useRef<HTMLHeadingElement>(null);
 
   // The backend sleeps when idle and takes up to ~90s to wake. Poking it as the
   // form appears lets it start up while the visitor is typing.
   useEffect(warmBackend, []);
+
+  // The thank-you replaces the taller form, possibly above the viewport.
+  // Focusing it scrolls it into view and has screen readers announce it.
+  useEffect(() => {
+    if (status.state === "sent") thanksRef.current?.focus();
+  }, [status.state]);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,7 +66,7 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
     setStatus({ state: "sending" });
     try {
       await submitEnquiry(input);
-      setStatus({ state: "sent" });
+      setStatus({ state: "sent", email: input.email });
       setSubject("");
       setMessage("");
     } catch (error) {
@@ -73,11 +83,14 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
 
   if (status.state === "sent") {
     return (
-      <div role="status" className="rounded-card border border-border bg-surface p-8">
+      <div className="rounded-card border border-border bg-surface p-8">
         <CheckCircle2 className="size-8 text-success" aria-hidden />
-        <h2 className="mt-4 text-h3">Message sent</h2>
+        <h2 ref={thanksRef} tabIndex={-1} className="mt-4 scroll-mt-28 text-h3 outline-none">
+          Thank you for contacting us!
+        </h2>
         <p className="mt-2 text-body text-muted-foreground">
-          Thanks — we&apos;ve received your message and will reply by email, usually within one working day.
+          We&apos;ve received your message and will get back to you soon. Our reply will go to{" "}
+          <span className="font-medium break-all text-foreground">{status.email}</span>.
         </p>
         <Button className="mt-6" variant="outline" onClick={() => setStatus({ state: "idle" })}>
           Send another message

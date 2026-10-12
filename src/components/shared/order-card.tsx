@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProductMedia } from "@/components/shared/product-image";
 import { OrderStatusBadge } from "@/components/shared/status-badge";
 import { ButtonLink } from "@/components/ui/button";
+import { orderNumber } from "@/lib/orders";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 /** The fields of GET /orders/myorders that the storefront renders. */
@@ -10,6 +11,8 @@ export type CustomerOrder = {
   createdAt: string;
   totalPrice: number;
   status: string;
+  shippingAddress?: string;
+  phoneNumber?: string;
   items: {
     _id: string;
     quantity: number;
@@ -24,8 +27,11 @@ export type CustomerOrder = {
   }[];
 };
 
-/** A past order: header facts, status, and its line items. Used by /orders and /profile. */
-export function OrderCard({ order }: { order: CustomerOrder }) {
+/**
+ * A past order: header facts, status, and its line items. Used by /orders,
+ * /profile and the checkout thank-you page, which hides "Buy again".
+ */
+export function OrderCard({ order, buyAgain = true }: { order: CustomerOrder; buyAgain?: boolean }) {
   return (
     <article className="overflow-hidden rounded-card border border-border bg-card">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-surface px-5 py-4 sm:px-6">
@@ -35,7 +41,7 @@ export function OrderCard({ order }: { order: CustomerOrder }) {
             <span className="tabular-nums">{formatCurrency(order.totalPrice)}</span>
           </Fact>
           <Fact label="Order">
-            <span className="font-mono">{order._id.slice(-8).toUpperCase()}</span>
+            <span className="font-mono">{orderNumber(order._id)}</span>
           </Fact>
         </dl>
         <OrderStatusBadge status={order.status} size="md" />
@@ -71,9 +77,11 @@ export function OrderCard({ order }: { order: CustomerOrder }) {
                   {formatCurrency(item.priceAtPurchase)} × {item.quantity}
                 </p>
               </div>
-              <ButtonLink href={`/products/${product.slug}`} variant="outline" size="sm">
-                Buy again
-              </ButtonLink>
+              {buyAgain && (
+                <ButtonLink href={`/products/${product.slug}`} variant="outline" size="sm">
+                  Buy again
+                </ButtonLink>
+              )}
             </li>
           );
         })}

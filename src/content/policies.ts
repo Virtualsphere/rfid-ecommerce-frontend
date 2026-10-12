@@ -9,6 +9,7 @@
  *
  * These are commitments to customers. Change any figure to match what the
  * business really does; the pages read from here, so one edit updates both.
+ * The checkout thank-you page also quotes `SHIPPING.processingTime`.
  */
 
 /** When the policy pages were last changed (ISO date). Bump it when you edit them. */
