@@ -14,29 +14,27 @@ import { useSlowHint } from "@/lib/use-slow-hint";
 import { cn, formatCurrency } from "@/lib/utils";
 import { GST_NOTE } from "@/lib/constants";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/shared/page-container";
 import { SectionHeader } from "@/components/shared/section-header";
 import { ProductMedia } from "@/components/shared/product-image";
 import { StockBadge } from "@/components/shared/status-badge";
 import { QuantityStepper } from "@/components/shared/quantity-stepper";
+import { ShippingAddressForm, type ShippingDetails } from "@/components/checkout/shipping-address-form";
 
 /** Razorpay's checkout accent. It only accepts a hex colour; this is --primary. */
 const RAZORPAY_THEME = "#18181b";
+
+const ADDRESS_INCOMPLETE = "Please complete your delivery address.";
 
 export default function CartPage() {
   const { user } = useAuth();
   const { items, cartTotal, loading, removeFromCart, updateQuantity } = useCart();
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [shippingAddress, setShippingAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [checkoutError, setCheckoutError] = useState("");
   const [itemError, setItemError] = useState("");
-  const ids = { phone: useId(), address: useId() };
+  const addressFormId = useId();
 
   // True while the order is being prepared, i.e. until the payment window opens
   // or something fails. Drives the "still working" hint.
@@ -47,17 +45,9 @@ export default function CartPage() {
   // replaces this one (or verification fails).
   const [confirming, setConfirming] = useState(false);
 
-  const handleCheckout = async () => {
+  // Only ever called with a complete address: ShippingAddressForm checks it first.
+  const handleCheckout = async ({ shippingAddress, phoneNumber, contact }: ShippingDetails) => {
     setCheckoutError("");
-    if (!shippingAddress.trim()) {
-      setCheckoutError("Please enter your shipping address.");
-      return;
-    }
-    if (!phoneNumber.trim() || phoneNumber.replace(/\D/g, "").length < 10) {
-      setCheckoutError("Please enter a valid phone number.");
-      return;
-    }
-
     if (!user) return router.push("/login?redirect=/cart");
 
     setCheckoutLoading(true);
@@ -94,7 +84,7 @@ export default function CartPage() {
           name: "Virtualsphere",
           description: "RFID Order Payment",
           themeColor: RAZORPAY_THEME,
-          prefill: { name: user.name, email: user.email, contact: phoneNumber.trim() },
+          prefill: { name: user.name, email: user.email, contact },
         },
         {
           onPaid: async (payment) => {
@@ -257,6 +247,25 @@ export default function CartPage() {
             <p aria-live="polite" className="mt-3 min-h-6 text-small text-danger">
               {itemError}
             </p>
+
+            <section
+              aria-labelledby="address-heading"
+              className="mt-4 rounded-card border border-border bg-card p-6 sm:p-8"
+            >
+              <h2 id="address-heading" className="text-h3">
+                Delivery address
+              </h2>
+              <p className="mt-1 text-small text-muted-foreground">We deliver to addresses across India.</p>
+              <ShippingAddressForm
+                id={addressFormId}
+                className="mt-6"
+                defaultName={user?.name}
+                onSubmit={handleCheckout}
+                onInvalid={() => setCheckoutError(ADDRESS_INCOMPLETE)}
+                // The fields show what's still missing; the summary's nudge would go stale.
+                onEdit={() => setCheckoutError((current) => (current === ADDRESS_INCOMPLETE ? "" : current))}
+              />
+            </section>
           </section>
 
           <section aria-labelledby="summary-heading" className="lg:col-span-5">
@@ -281,30 +290,7 @@ export default function CartPage() {
               </dl>
               <p className="text-meta text-muted-foreground">{GST_NOTE}</p>
 
-              <div className="mt-8 space-y-5 border-t border-border pt-6">
-                <h3 className="text-meta text-muted-foreground uppercase">Shipping details</h3>
-                <div className="space-y-2">
-                  <Label htmlFor={ids.phone}>Phone number</Label>
-                  <Input
-                    id={ids.phone}
-                    type="tel"
-                    autoComplete="tel"
-                    placeholder="10-digit mobile number"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={ids.address}>Delivery address</Label>
-                  <Textarea
-                    id={ids.address}
-                    autoComplete="street-address"
-                    placeholder="Street address, city, state and PIN code"
-                    value={shippingAddress}
-                    onChange={(e) => setShippingAddress(e.target.value)}
-                  />
-                </div>
-
+              <div className="mt-6 space-y-4">
                 <p
                   aria-live="polite"
                   className={cn("min-h-5 text-small", checkoutError ? "text-danger" : "text-muted-foreground")}
@@ -317,10 +303,12 @@ export default function CartPage() {
                         : "")}
                 </p>
 
+                {/* Submits the delivery address form, which starts the checkout. */}
                 <Button
+                  type="submit"
+                  form={addressFormId}
                   size="xl"
                   className="w-full"
-                  onClick={handleCheckout}
                   loading={checkoutLoading}
                   loadingText="Processing…"
                   endIcon={<ArrowRight />}

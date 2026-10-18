@@ -81,6 +81,8 @@ export interface Enquiry {
   _id: string;
   name: string;
   email: string;
+  /** Required since October 2026; enquiries sent before then have none. */
+  phone?: string;
   company?: string;
   /** One of ENQUIRY_SUBJECTS' values. */
   subject: string;

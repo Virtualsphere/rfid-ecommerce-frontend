@@ -5,6 +5,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Customer-logo spotlight: while a pointer rests on one [data-logo], everything
+   else inside the [data-logo-spotlight] wrapper recedes. Gated on real hover so
+   a tap on a touch screen can't leave the section stuck blurred. */
+@custom-variant logo-dimmed {
+  @media (hover: hover) {
+    :where([data-logo-spotlight]:has([data-logo]:hover)) &:where(:not([data-logo]:hover *)) {
+      @slot;
+    }
+  }
+}
+
 /*
  * ─── Design tokens ───────────────────────────────────────────────────────────
  *

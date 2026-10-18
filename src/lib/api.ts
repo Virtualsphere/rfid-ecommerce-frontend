@@ -528,6 +528,7 @@ export const updateOrderStatus = (orderId: string, status: string) =>
 export type EnquiryInput = {
   name: string;
   email: string;
+  phone: string;
   company?: string;
   subject: string;
   message: string;

@@ -5,6 +5,7 @@ import { CheckCircle2, Send } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ApiError, submitEnquiry } from "@/lib/api";
 import { ENQUIRY_SUBJECTS, enquirySubjectLabel, isEnquirySubject } from "@/lib/enquiries";
+import { isPhoneNumber } from "@/lib/phone";
 import { warmBackend } from "@/lib/warm-backend";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,9 @@ type Status =
  * ?topic=quote&product=…&qty=…, which pre-fills the subject and message.
  */
 export function ContactForm({ topic, product, quantity }: { topic?: string; product?: string; quantity?: string }) {
-  const ids = { name: useId(), email: useId(), company: useId(), subject: useId(), message: useId() };
+  const ids = { name: useId(), email: useId(), phone: useId(), company: useId(), subject: useId(), message: useId() };
+  const [phoneInvalid, setPhoneInvalid] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
   const [subject, setSubject] = useState<string>(isEnquirySubject(topic) ? topic : "");
   const [message, setMessage] = useState(
     product ? `I'd like a quote for ${quantity ? `${quantity} × ` : ""}${product}.\n\n` : ""
@@ -55,6 +58,7 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
     const input = {
       name: field("name"),
       email: field("email"),
+      phone: field("phone"),
       company: field("company"),
       subject,
       message: message.trim(),
@@ -62,6 +66,14 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
       quantity: quantity?.trim(),
       website: field("website"),
     };
+
+    // The browser has already insisted on something being there; this checks
+    // it's a number we can call back.
+    if (!isPhoneNumber(input.phone)) {
+      setPhoneInvalid(true);
+      phoneRef.current?.focus();
+      return;
+    }
 
     setStatus({ state: "sending" });
     try {
@@ -110,9 +122,32 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
         </Field>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <Field id={ids.phone} label="Phone number">
+          <Input
+            ref={phoneRef}
+            id={ids.phone}
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            maxLength={20}
+            placeholder="+91 98765 43210"
+            aria-invalid={phoneInvalid || undefined}
+            aria-describedby={phoneInvalid ? `${ids.phone}-error` : undefined}
+            onChange={() => setPhoneInvalid(false)}
+          />
+          {phoneInvalid && (
+            <p id={`${ids.phone}-error`} className="text-small text-danger">
+              Please enter a valid phone number. Outside India, include your country code.
+            </p>
+          )}
+        </Field>
         <Field id={ids.company} label="Company" optional>
           <Input id={ids.company} name="company" autoComplete="organization" maxLength={160} />
         </Field>
+      </div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <Field id={ids.subject} label="Subject">
           <NativeSelect id={ids.subject} name="subject" required value={subject} onChange={(e) => setSubject(e.target.value)}>
             <option value="" disabled>
@@ -170,7 +205,15 @@ export function ContactForm({ topic, product, quantity }: { topic?: string; prod
 }
 
 /** A mailto link carrying the whole message, for when the backend can't take it. */
-function mailtoFallback(input: { name: string; email: string; company: string; subject: string; message: string; product?: string }) {
+function mailtoFallback(input: {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  subject: string;
+  message: string;
+  product?: string;
+}) {
   const label = input.subject ? enquirySubjectLabel(input.subject) : "Website enquiry";
   const body = [
     input.message,
@@ -178,6 +221,7 @@ function mailtoFallback(input: { name: string; email: string; company: string; s
     "—",
     `Name: ${input.name}`,
     `Email: ${input.email}`,
+    `Phone: ${input.phone}`,
     ...(input.company ? [`Company: ${input.company}`] : []),
   ].join("\n");
   const title = input.product ? `${label}: ${input.product}` : label;

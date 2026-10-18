@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Building2, ChevronRight, Mail, MessageSquare, Package, Trash2 } from "lucide-react";
+import { Building2, ChevronRight, Mail, MessageSquare, Package, Phone, Trash2 } from "lucide-react";
 import { deleteEnquiry, fetchEnquiries, updateEnquiryStatus } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { enquirySubjectLabel } from "@/lib/enquiries";
@@ -137,6 +137,7 @@ export default function AdminEnquiriesPage() {
                         {enquiry.name}
                       </div>
                       <div className="text-xs text-zinc-500">{enquiry.email}</div>
+                      {enquiry.phone && <div className="text-xs tabular-nums text-zinc-500">{enquiry.phone}</div>}
                       {enquiry.company && <div className="text-xs text-zinc-500">{enquiry.company}</div>}
                     </td>
                     <td className="px-6 py-4">
@@ -192,6 +193,14 @@ export default function AdminEnquiriesPage() {
                   >
                     <Mail className="h-3.5 w-3.5 shrink-0" /> {selected.email}
                   </a>
+                  {selected.phone && (
+                    <a
+                      href={`tel:${selected.phone.replace(/[^\d+]/g, "")}`}
+                      className="flex items-center gap-1.5 text-sm tabular-nums text-blue-600 hover:underline"
+                    >
+                      <Phone className="h-3.5 w-3.5 shrink-0" /> {selected.phone}
+                    </a>
+                  )}
                   {selected.company && (
                     <div className="flex items-center gap-1.5 text-sm text-zinc-600">
                       <Building2 className="h-3.5 w-3.5 shrink-0" /> {selected.company}

@@ -6,7 +6,7 @@ import { getProductBySlug, getProductIndex, toProductSummary } from "@/lib/produ
 import { sanitizeProductHtml } from "@/lib/sanitize";
 import { pageMetadata, stripBrand } from "@/lib/seo";
 import { formatCurrency, getServerUrl, slugify, stripHtml, truncate } from "@/lib/utils";
-import { GST_NOTE, SITE_CONFIG, sdkRequestUrl, whatsappUrl } from "@/lib/constants";
+import { GST_NOTE, SITE_CONFIG, whatsappUrl } from "@/lib/constants";
 import type { Product } from "@/types";
 import { ImageGallery } from "@/components/products/image-gallery";
 import { PurchaseForm } from "@/components/products/purchase-form";
@@ -217,7 +217,9 @@ export default async function ProductPage({ params }: Props) {
                 <span>
                   Need the SDK or drivers?{" "}
                   <a
-                    href={sdkRequestUrl(`SDK request: ${product.name}${summary.sku ? ` (${summary.sku})` : ""}`)}
+                    href={SITE_CONFIG.resourcesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-foreground hover:underline"
                   >
                     Request the reader SDK
