@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { SITE_CONFIG, sdkRequestUrl, whatsappUrl } from "@/lib/constants";
+import { ArrowUpRight, Download } from "lucide-react";
+import { SITE_CONFIG, whatsappUrl } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { SUPPORT_HOURS } from "@/content/claims";
 import { PageContainer } from "@/components/shared/page-container";
 import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
@@ -82,12 +85,18 @@ export default async function ContactPage({ searchParams }: Props) {
                 </a>
               </Row>
               <Row label="Reader SDK">
-                <a href={sdkRequestUrl("Reader SDK request")} className="break-all hover:underline">
-                  {SITE_CONFIG.sdkEmail}
+                <p className="text-muted-foreground">Download reader SDKs, drivers and datasheets.</p>
+                <a
+                  href={SITE_CONFIG.resourcesUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-3")}
+                >
+                  <Download aria-hidden />
+                  Resource centre
+                  <ArrowUpRight aria-hidden />
+                  <span className="sr-only">(opens in a new tab)</span>
                 </a>
-                <p className="mt-1 text-muted-foreground">
-                  Email the reader model and we&apos;ll send the SDK, drivers and datasheet.
-                </p>
               </Row>
               {SUPPORT_HOURS.map((slot) => (
                 <Row key={slot.days} label={slot.days}>

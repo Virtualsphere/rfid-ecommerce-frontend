@@ -13,7 +13,7 @@ export const SITE_CONFIG = {
   /** A second line for calls, shown beside `phone` in the footer and on the contact page. */
   phoneSecondary: "+91-8287635245",
   /** Support site: reader SDKs, drivers and datasheets. */
-  resourcesUrl: "https://resource.indiarfidshop.com",
+  resourcesUrl: "https://resource.indiarfidshop.com/",
   /**
    * WhatsApp number, international format. ⚠ REVIEW: assumed to be the same
    * mobile as `phone`; change it here if WhatsApp runs on a different number.
