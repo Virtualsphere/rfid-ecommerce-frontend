@@ -9,7 +9,10 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 export type CustomerOrder = {
   _id: string;
   createdAt: string;
+  /** What was paid, GST included. */
   totalPrice: number;
+  /** The GST in `totalPrice`. Missing on orders placed before GST was added. */
+  gstAmount?: number;
   status: string;
   shippingAddress?: string;
   phoneNumber?: string;
@@ -39,6 +42,12 @@ export function OrderCard({ order, buyAgain = true }: { order: CustomerOrder; bu
           <Fact label="Placed">{formatDate(order.createdAt)}</Fact>
           <Fact label="Total">
             <span className="tabular-nums">{formatCurrency(order.totalPrice)}</span>
+            {order.gstAmount ? (
+              <span className="font-normal text-muted-foreground tabular-nums">
+                {" "}
+                incl. {formatCurrency(order.gstAmount)} GST
+              </span>
+            ) : null}
           </Fact>
           <Fact label="Order">
             <span className="font-mono">{orderNumber(order._id)}</span>

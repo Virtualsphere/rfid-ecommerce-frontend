@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@/lib/api";
 import { formatCurrency, cn, getServerUrl } from "@/lib/utils";
 import { ORDER_STATUSES, ORDER_STATUS_META, orderStatusMeta } from "@/lib/status";
+import { GST_PERCENT } from "@/lib/gst";
 import { badgeVariants } from "@/components/ui/badge";
 import { Package, Search, ChevronRight, X } from "lucide-react";
 import {
@@ -204,6 +205,19 @@ export default function AdminOrdersPage() {
                   })}
                 </ul>
               </div>
+
+              {selectedOrder.gstAmount ? (
+                <div className="border-t border-zinc-200 pt-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-600">Subtotal</span>
+                    <span className="font-medium text-zinc-900">{formatCurrency(selectedOrder.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-600">GST ({selectedOrder.gstRate ?? GST_PERCENT}%)</span>
+                    <span className="font-medium text-zinc-900">{formatCurrency(selectedOrder.gstAmount)}</span>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="border-t border-zinc-200 pt-4 flex justify-between items-center">
                 <span className="text-sm font-medium text-zinc-600">Total Amount Paid</span>

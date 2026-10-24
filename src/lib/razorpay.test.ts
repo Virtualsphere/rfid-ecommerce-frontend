@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "./api";
-import { checkoutErrorMessage } from "./razorpay";
+import { checkoutErrorMessage, paymentDescription } from "./razorpay";
 
 describe("checkoutErrorMessage", () => {
   it("shows the backend's own refusal for a client error", () => {
@@ -28,5 +28,18 @@ describe("checkoutErrorMessage", () => {
 
   it("copes with a network failure that isn't an ApiError at all", () => {
     expect(checkoutErrorMessage(new TypeError("Failed to fetch"))).toMatch(/couldn't start your payment/i);
+  });
+});
+
+describe("paymentDescription", () => {
+  it("spells out the products and the 18% GST Razorpay is collecting on top", () => {
+    expect(paymentDescription(1000, 118000)).toBe("Products ₹1,000 + 18% GST ₹180");
+    expect(paymentDescription(8196, 967128)).toBe("Products ₹8,196 + 18% GST ₹1,475.28");
+  });
+
+  it("falls back to the plain line when the amount isn't products plus GST", () => {
+    expect(paymentDescription(1000, 100000)).toBe("RFID Order Payment");
+    expect(paymentDescription(1000, 125000)).toBe("RFID Order Payment");
+    expect(paymentDescription(0, 0)).toBe("RFID Order Payment");
   });
 });
