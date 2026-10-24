@@ -1,4 +1,6 @@
 import { ApiError } from "./api";
+import { GST_PERCENT } from "./constants";
+import { formatCurrency } from "./utils";
 
 /**
  * Razorpay Standard Checkout: the script loader, the payment window, and the
@@ -90,6 +92,23 @@ export function openCheckout(options: CheckoutOptions, handlers: CheckoutHandler
     handlers.onFailed(response.error?.description || "The payment was declined.")
   );
   checkout.open();
+}
+
+/**
+ * The line under the store name in the payment window. When the amount
+ * Razorpay holds is the products plus GST, it spells out the split
+ * ("Products ₹1,000 + 18% GST ₹180"), since the site shows prices without GST.
+ * Any other amount (a backend that doesn't add GST yet, a price that changed
+ * since the cart loaded) gets the plain line rather than a split that doesn't add up.
+ */
+export function paymentDescription(productsTotal: number, amountPaise: number): string {
+  const productsPaise = Math.round(productsTotal * 100);
+  const gstPaise = amountPaise - productsPaise;
+  // Within a rupee of the rate allows for the backend rounding GST per item.
+  if (productsPaise > 0 && Math.abs(gstPaise - productsPaise * (GST_PERCENT / 100)) < 100) {
+    return `Products ${formatCurrency(productsPaise / 100)} + ${GST_PERCENT}% GST ${formatCurrency(gstPaise / 100)}`;
+  }
+  return "RFID Order Payment";
 }
 
 /** What to tell a customer when starting the payment failed. */

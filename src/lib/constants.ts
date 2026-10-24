@@ -129,9 +129,10 @@ export const HOME_FEATURED = {
 };
 
 /**
- * How prices relate to GST, shown beside every price.
- * ⚠ REVIEW: the cart doesn't calculate GST and no product records a rate, so
- * this wording is a neutral placeholder — confirm whether list prices include
- * GST and say so exactly (e.g. "Excl. 18% GST").
+ * GST, in percent, charged on top of every list price. The site shows prices
+ * without it; the backend adds it to the amount Razorpay collects.
  */
-export const GST_NOTE = "GST as applicable";
+export const GST_PERCENT = 18;
+
+/** How prices relate to GST, shown beside every price. */
+export const GST_NOTE = `Excl. ${GST_PERCENT}% GST`;

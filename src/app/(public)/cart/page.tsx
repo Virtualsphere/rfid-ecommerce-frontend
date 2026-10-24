@@ -8,7 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError, createOrder, verifyRazorpayPayment } from "@/lib/api";
 import { RAZORPAY_KEY_ID } from "@/lib/config";
-import { checkoutErrorMessage, loadRazorpay, openCheckout } from "@/lib/razorpay";
+import { checkoutErrorMessage, loadRazorpay, openCheckout, paymentDescription } from "@/lib/razorpay";
 import { orderConfirmationPath } from "@/lib/orders";
 import { useSlowHint } from "@/lib/use-slow-hint";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -73,16 +73,18 @@ export default function CartPage() {
         return;
       }
 
+      // Razorpay holds the amount on its order, GST included; the same figure keeps
+      // the window from disagreeing with it if a price changed since the cart loaded.
+      const amountPaise = created.amount ?? Math.round((created.order?.totalPrice ?? cartTotal) * 100);
+
       let paid = false;
       openCheckout(
         {
           keyId,
           orderId: created.razorpayOrderId,
-          // Razorpay holds the amount on its order; the same figure keeps the
-          // window from disagreeing with it if a price changed since the cart loaded.
-          amountPaise: created.amount ?? Math.round((created.order?.totalPrice ?? cartTotal) * 100),
+          amountPaise,
           name: "Virtualsphere",
-          description: "RFID Order Payment",
+          description: paymentDescription(cartTotal, amountPaise),
           themeColor: RAZORPAY_THEME,
           prefill: { name: user.name, email: user.email, contact },
         },
@@ -288,7 +290,7 @@ export default function CartPage() {
                   <dd className="text-h3 tabular-nums">{formatCurrency(cartTotal)}</dd>
                 </div>
               </dl>
-              <p className="text-meta text-muted-foreground">{GST_NOTE}</p>
+              <p className="text-meta text-muted-foreground">{GST_NOTE}, added at payment</p>
 
               <div className="mt-6 space-y-4">
                 <p

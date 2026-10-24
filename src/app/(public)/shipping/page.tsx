@@ -65,7 +65,8 @@ export default function ShippingPage() {
       <PolicySection title="Shipping charges">
         <p>
           Any shipping charge that applies to your order is confirmed before dispatch and is shown on your invoice. Prices on
-          this website do not include shipping unless the product page says so, and GST is charged as applicable.
+          this website exclude 18% GST, which is added when you pay, and do not include shipping unless the product page
+          says so.
         </p>
       </PolicySection>
 
