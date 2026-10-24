@@ -83,6 +83,23 @@ describe("curateHome hero slides", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it("lets a pinned showcase sheet repeat a pinned hero slide, but never an automatic pick", () => {
+    const { heroSlides, showcase, rail } = curateHome(catalog(), {
+      heroSlides: ["handheld", "integrated"],
+      showcase: ["handheld", "four-port", "handheld", "missing"],
+    });
+
+    expect(showcase.slice(0, 2).map((p) => p.slug)).toEqual(["handheld", "four-port"]);
+    expect(showcase).toHaveLength(4);
+    expect(new Set(showcase.map((p) => p._id)).size).toBe(showcase.length);
+    expect(heroSlides.slice(0, 2).map((p) => p.slug)).toEqual(["handheld", "integrated"]);
+    // Everything beyond the pins is filled without repeating anything already shown.
+    const autoHero = heroSlides.slice(2).map((p) => p._id);
+    const autoShowcase = showcase.slice(2).map((p) => p._id);
+    expect(autoHero.filter((id) => autoShowcase.includes(id))).toEqual([]);
+    expect(rail.filter((p) => showcase.includes(p) || heroSlides.includes(p))).toEqual([]);
+  });
+
   it("skips products that are out of stock, photo-less or thinly specified", () => {
     // Four pricier readers fill the showcase, which is picked before the rotation.
     const showcaseFill = ["A", "B", "C", "D"].map((n) =>

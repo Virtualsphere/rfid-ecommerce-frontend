@@ -6,7 +6,7 @@ export const SITE_CONFIG = {
   description:
     "Professional RFID products and inventory management solutions for modern enterprises. Tags, readers, antennas, and complete tracking systems.",
   url: SITE_URL,
-  email: "info@Virtualspheretechnologies.in",
+  email: "info@virtualspheretechnologies.in",
   /** The office's mobile line; it is also the number people ring and message. */
   phone: "+91-7050506400",
   /** A second line for calls, shown beside `phone` in the footer and on the contact page. */
@@ -107,9 +107,10 @@ export const PRODUCT_CATEGORIES = [
  * are high-resolution shots on white, which the product plate needs — VSL-A1,
  * UDR 105 and PVR 3 are shot on black and UHR 72 on grey, so they show as
  * boxes. Any slug that's disabled or out of stock is replaced automatically
- * (see curateHome), and products in the hero are never repeated in the showcase.
+ * (see curateHome). A product pinned in both lists shows in both.
  *
  * Hero, as requested: UDT9R, UDM9R, UHR 2, UDM12R, UDR 105.
+ * Showcase, as requested: UHR2, UDM12R, VSL-F2, UDR-W101.
  */
 export const HOME_FEATURED = {
   heroSlides: [
@@ -119,7 +120,7 @@ export const HOME_FEATURED = {
     "udm12r-uhf-Integrated-reader",
     "udr-w105-uhf-rfid-desktop-reader-writer",
   ],
-  showcase: ["uhr-2", "vsl-a2", "ua9", "udr-w101"],
+  showcase: ["uhr2-uhf-rfid-handheld-reader", "udm12r-uhf-Integrated-reader", "vsl-f2-uhf-rfid-4-port-reader", "udr-w101-uhf-rfid-desktop-reader-writer"],
 };
 
 /**

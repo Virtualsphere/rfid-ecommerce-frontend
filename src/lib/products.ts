@@ -214,8 +214,9 @@ export async function getProductIndex(): Promise<
  * The hero is a rotation (`heroSlides`): the pinned products in the order
  * given, then — for any slots they leave empty — the flagship and one product
  * from each other category, so the plate shows the range — a reader, an
- * antenna, a tag — rather than one product. Slides come from what the showcase
- * and rail don't use, so no product appears twice on the page.
+ * antenna, a tag — rather than one product. Automatic picks never repeat: filled
+ * slides come from what the showcase and rail don't use. Only a product pinned
+ * in both the hero and the showcase shows twice.
  */
 export const HERO_SLIDE_LIMIT = 5;
 
@@ -253,10 +254,12 @@ export function curateHome(
   }
   const taken = new Set(heroSlides.map((p) => p._id));
 
+  // Pinned sheets may repeat a hero slide — the hero is a rotation and these were
+  // chosen by hand, so a product pinned in both places shows in both.
   const showcase: ProductSummary[] = [];
   for (const slug of featured.showcase ?? []) {
     const card = bySlug(slug);
-    if (card && !taken.has(card._id) && showcase.length < 4) {
+    if (card && !showcase.includes(card) && showcase.length < 4) {
       showcase.push(card);
       taken.add(card._id);
     }
