@@ -2,8 +2,8 @@
  * ⚠ POLICY TERMS — REVIEW BEFORE LAUNCH
  *
  * The numbers and promises behind the Return & Refund and Shipping & Delivery
- * pages. Nothing in the codebase or the backend records these (the cart says
- * "Shipping: Calculated at checkout" but computes nothing), so each value below
+ * pages. Nothing in the codebase or the backend records these (the cart
+ * doesn't charge for shipping), so each value below
  * is a conventional default for an Indian hardware seller, written so the pages
  * read correctly — not a decision the business has made.
  *

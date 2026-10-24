@@ -159,7 +159,7 @@ export default function CartPage() {
 
   const liveItems = items.filter((item) => item.product);
   // Listed prices exclude GST; the backend adds the same amount to what Razorpay charges.
-  const { gst, total: orderTotal } = withGst(cartTotal);
+  const { total: orderTotal } = withGst(cartTotal);
 
   return (
     <PageContainer className="pt-10 pb-20 lg:pt-14">
@@ -284,12 +284,8 @@ export default function CartPage() {
                   <dd className="font-medium tabular-nums">{formatCurrency(cartTotal)}</dd>
                 </div>
                 <div className="flex justify-between border-b border-border py-3">
-                  <dt className="text-muted-foreground">GST ({GST_PERCENT}%)</dt>
-                  <dd className="font-medium tabular-nums">{formatCurrency(gst)}</dd>
-                </div>
-                <div className="flex justify-between border-b border-border py-3">
-                  <dt className="text-muted-foreground">Shipping</dt>
-                  <dd>Calculated at checkout</dd>
+                  <dt className="text-muted-foreground">GST</dt>
+                  <dd className="font-medium tabular-nums">{GST_PERCENT}%</dd>
                 </div>
                 <div className="flex items-baseline justify-between py-4">
                   <dt className="text-body font-medium">Order total</dt>
