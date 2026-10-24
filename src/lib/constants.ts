@@ -111,7 +111,9 @@ export const PRODUCT_CATEGORIES = [
  * (see curateHome). A product pinned in both lists shows in both.
  *
  * Hero, as requested: UDT9R, UDM9R, UHR 2, UDM12R, UDR 105.
- * Showcase, as requested: UHR2, UDM12R, VSL-F2, UDR-W101.
+ * Showcase, as requested: UHR2, UDT-W3, VSL-F2, UDR-W101. ⚠ REVIEW: the UDT-W3
+ * slug is the one the admin form generates from the product name; if the
+ * product was given a custom slug, use that instead.
  */
 export const HOME_FEATURED = {
   heroSlides: [
@@ -123,7 +125,7 @@ export const HOME_FEATURED = {
   ],
   showcase: [
     "uhr2-uhf-rfid-handheld-reader",
-    "udm12r-uhf-Integrated-reader",
+    "virtualsphere-udt-w3-uhf-rfid-table-top-reader-impinj-e310-500-tags-sec-usb-type-c",
     "vsl-f2-uhf-rfid-4-port-reader",
     "udr-w101-uhf-rfid-desktop-reader-writer",
   ],
