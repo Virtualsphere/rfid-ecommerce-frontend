@@ -120,7 +120,12 @@ export const HOME_FEATURED = {
     "udm12r-uhf-Integrated-reader",
     "udr-w105-uhf-rfid-desktop-reader-writer",
   ],
-  showcase: ["uhr2-uhf-rfid-handheld-reader", "udm12r-uhf-Integrated-reader", "vsl-f2-uhf-rfid-4-port-reader", "udr-w101-uhf-rfid-desktop-reader-writer"],
+  showcase: [
+    "uhr2-uhf-rfid-handheld-reader",
+    "udm12r-uhf-Integrated-reader",
+    "vsl-f2-uhf-rfid-4-port-reader",
+    "udr-w101-uhf-rfid-desktop-reader-writer",
+  ],
 };
 
 /**
