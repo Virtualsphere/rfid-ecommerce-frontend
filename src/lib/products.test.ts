@@ -100,6 +100,27 @@ describe("curateHome hero slides", () => {
     expect(rail.filter((p) => showcase.includes(p) || heroSlides.includes(p))).toEqual([]);
   });
 
+  it("pins a product by its name when its slug isn't known", () => {
+    const cards = catalog();
+    cards.push(
+      card({
+        categoryName: "UHF Desktop Reader",
+        name: "Virtualsphere UDT-W3 UHF RFID Table Top Reader – Impinj E310, 500+ Tags/Sec, USB Type-C",
+        slug: "udt-w3",
+      })
+    );
+    const { showcase } = curateHome(cards, {
+      showcase: ["handheld", "Virtualsphere UDT-W3 UHF RFID Table Top Reader – Impinj E310, 500+ Tags/Sec, USB Type-C"],
+    });
+    expect(showcase.slice(0, 2).map((p) => p.slug)).toEqual(["handheld", "udt-w3"]);
+  });
+
+  it("matches a pin's slug before any product's name", () => {
+    const cards = catalog();
+    cards.unshift(card({ categoryName: "Handheld Reader", name: "Desktop" }));
+    expect(curateHome(cards, { showcase: ["desktop"] }).showcase[0].slug).toBe("desktop");
+  });
+
   it("skips products that are out of stock, photo-less or thinly specified", () => {
     // Four pricier readers fill the showcase, which is picked before the rotation.
     const showcaseFill = ["A", "B", "C", "D"].map((n) =>

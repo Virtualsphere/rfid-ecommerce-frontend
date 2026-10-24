@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { connection } from "next/server";
 import { fetchProductsResult, fetchProductBySlug, fetchCategoriesResult } from "./api";
-import { stripHtml, truncate } from "./utils";
+import { slugify, stripHtml, truncate } from "./utils";
 import { cleanProductName } from "./seo";
 import { buildCategoryTree, storefrontCategories, type CategorySummary } from "./categories";
 import type { Category, Product } from "@/types";
@@ -222,7 +222,10 @@ export const HERO_SLIDE_LIMIT = 5;
 
 export function curateHome(
   cards: ProductSummary[],
-  /** Merchandising picks by slug; any that aren't live and in stock are filled automatically. */
+  /**
+   * Merchandising picks by slug or by product name; any that aren't live and
+   * in stock are filled automatically.
+   */
   featured: { heroSlides?: string[]; showcase?: string[] } = {}
 ): {
   heroSlides: ProductSummary[];
@@ -239,13 +242,18 @@ export function curateHome(
     .sort((a, b) => rank(a.card) - rank(b.card) || b.card.price - a.card.price || a.index - b.index)
     .map(({ card }) => card);
 
-  const bySlug = (slug: string) => cards.find((p) => p.slug === slug && p.stock > 0);
+  // A pin is a slug or, since a slug can be typed freely in the admin panel,
+  // the product's name as it reads on the site. Slugs are matched first so a
+  // name can never steal another product's pin.
+  const inStock = cards.filter((p) => p.stock > 0);
+  const pinned = (pin: string) =>
+    inStock.find((p) => p.slug === pin) ?? inStock.find((p) => slugify(p.name) === slugify(pin));
 
   // Pinned slides keep the order they were given in and skip the photo/spec
   // and one-per-category checks: they were chosen by hand.
   const heroSlides: ProductSummary[] = [];
-  for (const slug of featured.heroSlides ?? []) {
-    const card = bySlug(slug);
+  for (const pin of featured.heroSlides ?? []) {
+    const card = pinned(pin);
     if (card && !heroSlides.includes(card) && heroSlides.length < HERO_SLIDE_LIMIT) heroSlides.push(card);
   }
   if (heroSlides.length === 0) {
@@ -257,8 +265,8 @@ export function curateHome(
   // Pinned sheets may repeat a hero slide — the hero is a rotation and these were
   // chosen by hand, so a product pinned in both places shows in both.
   const showcase: ProductSummary[] = [];
-  for (const slug of featured.showcase ?? []) {
-    const card = bySlug(slug);
+  for (const pin of featured.showcase ?? []) {
+    const card = pinned(pin);
     if (card && !showcase.includes(card) && showcase.length < 4) {
       showcase.push(card);
       taken.add(card._id);
