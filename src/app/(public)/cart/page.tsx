@@ -12,7 +12,7 @@ import { checkoutErrorMessage, loadRazorpay, openCheckout } from "@/lib/razorpay
 import { orderConfirmationPath } from "@/lib/orders";
 import { useSlowHint } from "@/lib/use-slow-hint";
 import { cn, formatCurrency } from "@/lib/utils";
-import { GST_NOTE } from "@/lib/constants";
+import { GST_PERCENT, withGst } from "@/lib/gst";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/shared/page-container";
@@ -80,7 +80,7 @@ export default function CartPage() {
           orderId: created.razorpayOrderId,
           // Razorpay holds the amount on its order; the same figure keeps the
           // window from disagreeing with it if a price changed since the cart loaded.
-          amountPaise: created.amount ?? Math.round((created.order?.totalPrice ?? cartTotal) * 100),
+          amountPaise: created.amount ?? Math.round((created.order?.totalPrice ?? orderTotal) * 100),
           name: "Virtualsphere",
           description: "RFID Order Payment",
           themeColor: RAZORPAY_THEME,
@@ -156,6 +156,8 @@ export default function CartPage() {
   };
 
   const liveItems = items.filter((item) => item.product);
+  // Listed prices exclude GST; the backend adds the same amount to what Razorpay charges.
+  const { gst, total: orderTotal } = withGst(cartTotal);
 
   return (
     <PageContainer className="pt-10 pb-20 lg:pt-14">
@@ -280,15 +282,18 @@ export default function CartPage() {
                   <dd className="font-medium tabular-nums">{formatCurrency(cartTotal)}</dd>
                 </div>
                 <div className="flex justify-between border-b border-border py-3">
+                  <dt className="text-muted-foreground">GST ({GST_PERCENT}%)</dt>
+                  <dd className="font-medium tabular-nums">{formatCurrency(gst)}</dd>
+                </div>
+                <div className="flex justify-between border-b border-border py-3">
                   <dt className="text-muted-foreground">Shipping</dt>
                   <dd>Calculated at checkout</dd>
                 </div>
                 <div className="flex items-baseline justify-between py-4">
                   <dt className="text-body font-medium">Order total</dt>
-                  <dd className="text-h3 tabular-nums">{formatCurrency(cartTotal)}</dd>
+                  <dd className="text-h3 tabular-nums">{formatCurrency(orderTotal)}</dd>
                 </div>
               </dl>
-              <p className="text-meta text-muted-foreground">{GST_NOTE}</p>
 
               <div className="mt-6 space-y-4">
                 <p

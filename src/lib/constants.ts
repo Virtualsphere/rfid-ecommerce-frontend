@@ -1,4 +1,5 @@
 import { SITE_URL } from "./config";
+import { GST_PERCENT } from "./gst";
 
 export const SITE_CONFIG = {
   name: "Virtualsphere",
@@ -129,9 +130,7 @@ export const HOME_FEATURED = {
 };
 
 /**
- * How prices relate to GST, shown beside every price.
- * ⚠ REVIEW: the cart doesn't calculate GST and no product records a rate, so
- * this wording is a neutral placeholder — confirm whether list prices include
- * GST and say so exactly (e.g. "Excl. 18% GST").
+ * How prices relate to GST, shown beside every price: listed prices exclude
+ * it, and the cart adds it at checkout (src/lib/gst.ts).
  */
-export const GST_NOTE = "GST as applicable";
+export const GST_NOTE = `Excl. ${GST_PERCENT}% GST, added at checkout`;
