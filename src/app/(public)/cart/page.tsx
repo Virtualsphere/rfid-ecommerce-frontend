@@ -291,7 +291,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex items-baseline justify-between py-4">
                   <dt className="text-body font-medium">Order total</dt>
-                  <dd className="text-h3 tabular-nums">{formatCurrency(orderTotal)}</dd>
+                  <dd className="text-h3 tabular-nums">{formatCurrency(cartTotal)}</dd>
                 </div>
               </dl>
 
