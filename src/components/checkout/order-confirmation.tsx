@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { fetchMyOrders } from "@/lib/api";
 import { orderConfirmationPath, orderNumber } from "@/lib/orders";
+import { reportPurchase } from "@/lib/purchase-tracking";
 import { SITE_CONFIG, whatsappUrl } from "@/lib/constants";
 import { SHIPPING } from "@/content/policies";
 import { ButtonLink } from "@/components/ui/button";
@@ -47,7 +48,10 @@ export function OrderConfirmation({ orderId }: { orderId?: string }) {
     fetchMyOrders()
       .then((orders: CustomerOrder[]) => {
         const order = orders.find((o) => o._id === orderId);
-        if (current) setLookup(order ? { status: "found", order } : { status: "missing" });
+        if (!current) return;
+        setLookup(order ? { status: "found", order } : { status: "missing" });
+        // Tells Google Tag Manager about the sale, once per order however often this page loads.
+        if (order) reportPurchase(order);
       })
       .catch((error) => {
         console.error("Failed to load the order", error);

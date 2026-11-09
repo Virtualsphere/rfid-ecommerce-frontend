@@ -11,9 +11,13 @@ export type CustomerOrder = {
   createdAt: string;
   /** What was paid, GST included. */
   totalPrice: number;
+  /** The products before GST. Missing on orders placed before GST was added. */
+  subtotal?: number;
   /** The GST in `totalPrice`. Missing on orders placed before GST was added. */
   gstAmount?: number;
   status: string;
+  /** "Pending", "Paid" or "Failed". */
+  paymentStatus?: string;
   shippingAddress?: string;
   phoneNumber?: string;
   items: {
@@ -22,6 +26,7 @@ export type CustomerOrder = {
     priceAtPurchase: number;
     product: {
       _id: string;
+      sku?: string;
       name: string;
       slug: string;
       images?: string[];

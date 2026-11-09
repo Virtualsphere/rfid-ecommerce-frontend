@@ -103,13 +103,15 @@ export default function CartPage() {
               return;
             }
 
-            // Google Ads purchase conversion
+            // Google Ads purchase conversion. Its transaction ID is the order's
+            // id, the same one the thank-you page's dataLayer `purchase` event
+            // carries, so Google Ads can drop the duplicate if both are counted.
             if (typeof window !== "undefined" && typeof window.gtag === "function") {
               window.gtag("event", "conversion", {
                 send_to: "AW-17705374623/Ty7LCMWB7ZAdEJ-nyvpB",
                 value: cartTotal,
                 currency: "INR",
-                transaction_id: payment.razorpay_order_id,
+                transaction_id: created.order._id,
               });
             }
 
