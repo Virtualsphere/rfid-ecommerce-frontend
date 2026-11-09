@@ -5,7 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { SITE_URL } from "@/lib/config";
 import { HOME_TITLE, OPEN_GRAPH_DEFAULTS, SITE_NAME } from "@/lib/seo";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import Script from "next/script";
 
 const inter = Inter({
@@ -89,6 +89,7 @@ export default function RootLayout({
       // React hydrates.
       suppressHydrationWarning
     >
+      <GoogleTagManager gtmId="GTM-MJTFRDXL" />
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />
       </head>
