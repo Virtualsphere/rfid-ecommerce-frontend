@@ -30,6 +30,25 @@ const jetbrainsMono = JetBrains_Mono({
  */
 const JS_FLAG = "document.documentElement.classList.add('js')";
 
+/**
+ * Google consent mode defaults, every consent type granted. This must reach
+ * the dataLayer before GTM and gtag.js load. That holds because it's a plain
+ * inline script in <head>, which runs while the HTML is parsed, and they are
+ * afterInteractive next/script tags. gtag() has to push `arguments` itself,
+ * not an array copy of it, or Google's tags ignore the command.
+ */
+const CONSENT_DEFAULTS = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
+  ad_personalization: 'granted',
+  analytics_storage: 'granted',
+  functionality_storage: 'granted',
+  personalization_storage: 'granted',
+  security_storage: 'granted'
+});`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   // The template adds the brand to every page title, so pages pass theirs
@@ -91,6 +110,7 @@ export default function RootLayout({
     >
       <GoogleTagManager gtmId="GTM-MJTFRDXL" />
       <head>
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_DEFAULTS }} />
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />
       </head>
       <body className="min-h-full flex flex-col">
