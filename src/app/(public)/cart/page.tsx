@@ -103,22 +103,36 @@ export default function CartPage() {
               return;
             }
 
+            // A full page load, not router.replace(). The Google Tag Manager
+            // conversion tag fires on a Page View trigger for the thank-you URL,
+            // and Page View triggers only fire when a page actually loads, never
+            // on in-app navigation. location.replace() also keeps Back from
+            // returning to a cart that's now empty. The thank-you page refreshes
+            // the cart; doing it here would flash "Your cart is empty" first.
+            let leaving = false;
+            const goToThankYou = () => {
+              if (leaving) return;
+              leaving = true;
+              window.location.replace(orderConfirmationPath(created.order._id));
+            };
+
             // Google Ads purchase conversion. Its transaction ID is the order's
-            // id, the same one the thank-you page's dataLayer `purchase` event
-            // carries, so Google Ads can drop the duplicate if both are counted.
-            if (typeof window !== "undefined" && typeof window.gtag === "function") {
+            // id, so Google Ads can drop the duplicate if another tag counts the
+            // same sale. The page is left from event_callback, once gtag has sent
+            // the hit, so unloading can't cancel it. The timer covers gtag.js
+            // being blocked or slow, when the callback never comes.
+            if (typeof window.gtag === "function") {
               window.gtag("event", "conversion", {
                 send_to: "AW-17705374623/Ty7LCMWB7ZAdEJ-nyvpB",
                 value: cartTotal,
                 currency: "INR",
                 transaction_id: created.order._id,
+                event_callback: goToThankYou,
               });
+              window.setTimeout(goToThankYou, 2000);
+            } else {
+              goToThankYou();
             }
-
-            // Replace, so Back doesn't return to a cart that's now empty. The
-            // thank-you page refreshes the cart; doing it here would flash
-            // "Your cart is empty" before the page changes.
-            router.replace(orderConfirmationPath(created.order._id));
           },
           // Closing the window used to leave the button stuck on "Processing…".
           // Once a payment has gone through, though, verification is still
